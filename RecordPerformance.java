@@ -101,6 +101,22 @@ class MyReceiver implements javax.sound.midi.Receiver {
 	 */
 	public void send(MidiMessage message, long timeStamp) {
 		// ここでMIDIキーボードからのメッセージの解析を行う
+		// とりあえず，サンプルと同じコードを書いて，いろいろいじる
+		if(message instanceof ShortMessage) {
+			ShortMessage sm = ((ShortMessage)message);
+			// getCommand()で取得したMIDIメッセージの種類によって挙動を変える
+			switch(sm.getCommand()) {
+			case ShortMessage.NOTE_ON:
+				// getData1()で音程，getData2()でベロシティの取得
+				this.defaultChannel.noteOn(sm.getData1(), sm.getData2());
+				System.out.println("NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				break;
+			case ShortMessage.NOTE_OFF:
+				this.defaultChannel.noteOff(sm.getData1(), sm.getData2());
+				System.out.println("NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				break;
+			}
+		}
 	}
 	
 	/**
