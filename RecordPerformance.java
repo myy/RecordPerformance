@@ -53,7 +53,7 @@ class RecordPerformance {
 		}
 		device_input.close();
 		
-		// MyReceiverクラスのinputDataの中身を確認する
+		// MIDIキーボードで入力された情報を確認する
 		printInputData(myrecv.inputData);
 				
 		System.out.println("exit");
@@ -86,27 +86,27 @@ class RecordPerformance {
 	/**
 	 * MIDIキーボードから受け取ったデータを一覧表示する
 	 */
-	public static void printInputData(ArrayList<Long[]> inputData) {
+	public static void printInputData(ArrayList<MIDIData> inputData) {
 		System.out.println("inputted data");
 		for(int i=0;i<inputData.size();i++) {
-			System.out.println("pitch: " + inputData.get(i)[0]
-							   + "  velocity: " + inputData.get(i)[1]
-							   + "  timeStamp: " + inputData.get(i)[2]);			
-		}	
+			System.out.println("pitch: " + inputData.get(i).pitch
+					   + "  velocity: " + inputData.get(i).velocity
+					   + "  timeStamp: " + inputData.get(i).timeStamp);			
+		}
 	}
 	
 }
 
 /**
  * MIDIデバイスからの入力を受けとる自作レシーバー
- * @author suzukimio
+ * @author myy
  *
  */
 class MyReceiver implements Receiver {
 	private Synthesizer synth;
 	private MidiChannel defaultChannel;
 	int debug = 0; // for debug
-	public static ArrayList<Long[]> inputData = new ArrayList<Long[]>(); // 音程，ベロシティ，タイムスタンプを保持する配列
+	public static ArrayList<MIDIData> inputData = new ArrayList<MIDIData>(); // 音程，ベロシティ，タイムスタンプを保持する
 	
 	/**
 	 * コンストラクタ
@@ -141,11 +141,9 @@ class MyReceiver implements Receiver {
 				// getData1()で音程，getData2()でベロシティの取得
 				this.defaultChannel.noteOn(sm.getData1(), sm.getData2()); // ソフトウェア音源で発音
 				System.out.println("[" + debug + "] NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
-				// 音程，ベロシティ，タイムスタンプをLong型配列dataに入れて，data.clone()をaddする
-				Long[] data = {new Long((long)sm.getData1()),
-							   new Long((long)sm.getData2()),
-							   new Long(timeStamp)};
-				inputData.add(data.clone());
+				// 取得した音程，ベロシティ，タイムスタンプをaddする
+				MIDIData midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
+				inputData.add(midiData_); // cloneしたほうがよいのかな？
 				break;
 			case ShortMessage.NOTE_OFF: // 明示的に消音のメッセージが送られた場合はこちらの処理に入る
 				this.defaultChannel.noteOff(sm.getData1(), sm.getData2()); // ソフトウェア音源で消音
@@ -153,7 +151,7 @@ class MyReceiver implements Receiver {
 				break;
 			}
 			
-			System.out.println("hoge"); // デバッグ用
+//			System.out.println("hoge"); // デバッグ用
 			
 		}
 	}
@@ -165,4 +163,25 @@ class MyReceiver implements Receiver {
 		
 	}
 	
+}
+
+/**
+ * MIDIキーボードで入力された音程，ベロシティ，タイムスタンプを扱うクラス
+ * @author myy
+ *
+ */
+class MIDIData {
+	int pitch;
+	int velocity;
+	long timeStamp;
+	
+	public MIDIData() {
+		
+	}
+	
+	public MIDIData(int pitch, int velocity, long timeStamp) {
+		this.pitch = pitch;
+		this.velocity = velocity;
+		this.timeStamp = timeStamp;
+	}
 }
