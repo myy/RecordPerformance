@@ -20,6 +20,8 @@ class RecordPerformance {
 		ArrayList<MidiDevice> devices = getDevices();
 		MidiDevice device_input = devices.get(DEVICE_IN);
 		MidiDevice device_output = devices.get(DEVICE_OUT);
+		MyReceiver myrecv = null;
+		
 		if(!(device_output instanceof Synthesizer)) {
 			throw new IllegalArgumentException("not a Synthesizer!");
 		}
@@ -35,12 +37,26 @@ class RecordPerformance {
 			}
 			
 			// PCR-M1からの入力を受け取って，いろいろやりたいのでレシーバーを自作する
-			Receiver myrecv = new MyReceiver(device_output);
+			myrecv = new MyReceiver(device_output);
 			trans.setReceiver(myrecv);
 		} catch(MidiUnavailableException e) {
 			System.err.println(e.getMessage());
 			System.exit(0);
 		}
+		
+		// ENTERキーが押されるたら，デバイスを閉じる
+		try {
+			System.in.read();
+			System.out.println("Pressed ENTER key");
+		} catch (IOException e) {
+			
+		}
+		device_input.close();
+		
+		// MyReceiverクラスのinputDataの中身を確認する
+		printInputData(myrecv.inputData);
+				
+		System.out.println("exit");
 
 	}
 	
@@ -67,6 +83,18 @@ class RecordPerformance {
 		return devices;
 	}
 
+	/**
+	 * MIDIキーボードから受け取ったデータを一覧表示する
+	 */
+	public static void printInputData(ArrayList<Long[]> inputData) {
+		System.out.println("inputted data");
+		for(int i=0;i<inputData.size();i++) {
+			System.out.println("pitch: " + inputData.get(i)[0]
+							   + "  velocity: " + inputData.get(i)[1]
+							   + "  timeStamp: " + inputData.get(i)[2]);			
+		}	
+	}
+	
 }
 
 /**
@@ -74,9 +102,11 @@ class RecordPerformance {
  * @author suzukimio
  *
  */
-class MyReceiver implements javax.sound.midi.Receiver {
+class MyReceiver implements Receiver {
 	private Synthesizer synth;
 	private MidiChannel defaultChannel;
+	int debug = 0; // for debug
+	public static ArrayList<Long[]> inputData = new ArrayList<Long[]>(); // 音程，ベロシティ，タイムスタンプを保持する配列
 	
 	/**
 	 * コンストラクタ
@@ -100,22 +130,31 @@ class MyReceiver implements javax.sound.midi.Receiver {
 	 * sendメソッド
 	 */
 	public void send(MidiMessage message, long timeStamp) {
-		// ここでMIDIキーボードからのメッセージの解析を行う
-		// とりあえず，サンプルと同じコードを書いて，いろいろいじる
+		// sendメソッドは周期的に呼び出されている
+		
 		if(message instanceof ShortMessage) {
 			ShortMessage sm = ((ShortMessage)message);
 			// getCommand()で取得したMIDIメッセージの種類によって挙動を変える
 			switch(sm.getCommand()) {
-			case ShortMessage.NOTE_ON:
+			case ShortMessage.NOTE_ON: // 鍵盤を離した場合もこちらの処理に入る
+				debug++;
 				// getData1()で音程，getData2()でベロシティの取得
-				this.defaultChannel.noteOn(sm.getData1(), sm.getData2());
-				System.out.println("NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				this.defaultChannel.noteOn(sm.getData1(), sm.getData2()); // ソフトウェア音源で発音
+				System.out.println("[" + debug + "] NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				// 音程，ベロシティ，タイムスタンプをLong型配列dataに入れて，data.clone()をaddする
+				Long[] data = {new Long((long)sm.getData1()),
+							   new Long((long)sm.getData2()),
+							   new Long(timeStamp)};
+				inputData.add(data.clone());
 				break;
-			case ShortMessage.NOTE_OFF:
-				this.defaultChannel.noteOff(sm.getData1(), sm.getData2());
+			case ShortMessage.NOTE_OFF: // 明示的に消音のメッセージが送られた場合はこちらの処理に入る
+				this.defaultChannel.noteOff(sm.getData1(), sm.getData2()); // ソフトウェア音源で消音
 				System.out.println("NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				break;
 			}
+			
+			System.out.println("hoge"); // デバッグ用
+			
 		}
 	}
 	
@@ -125,4 +164,5 @@ class MyReceiver implements javax.sound.midi.Receiver {
 	public void close() {
 		
 	}
+	
 }
