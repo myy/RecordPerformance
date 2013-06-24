@@ -1,5 +1,9 @@
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+
 import javax.sound.midi.*;
 
 /**
@@ -54,8 +58,87 @@ class RecordPerformance {
 		device_input.close();
 		
 		// MIDIキーボードで入力された情報を確認する
-		printInputData(myrecv.inputData);
+		printInputData(MyReceiver.inputData);
 				
+		// MIDIキーボードでの演奏からmidファイルを生成する
+		// ファイル名は日時と時刻にする
+		Calendar cal = Calendar.getInstance();
+		DateFormat format = new SimpleDateFormat("MMddHHmmss");
+		String date = format.format(cal.getTime());
+		
+		// ファイル名の設定
+		File outputFile = new File(date + ".mid");
+		
+		// Sequence型変数の準備
+		Sequence sequence = null;
+		
+		// MetaMessage型変数の準備
+		MetaMessage mmes = null;
+		int l = 0; // ４分音符1つぶんの秒数（マイクロ秒）
+		
+		try {
+			sequence = new Sequence(Sequence.PPQ, 480); // ４分音符一つ＝480tick
+			
+			// テンポを設定する
+			mmes = new MetaMessage();
+			int tempo = 80; // ここは録音前に自由に変えられるようにしなければいけない
+			l = 60*1000000/tempo;
+			mmes.setMessage(0x51, new byte[]{(byte)(l/65536), (byte)(l%65536/256), (byte)(l%256)}, 3);
+
+			// 曲によっては，メタメッセージで拍子の設定も必要になってくる
+			
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		// 空のトラックを準備する
+		Track track = sequence.createTrack();
+		
+		// テンポ設定のメタメッセージをトラックにaddする
+		track.add(new MidiEvent(mmes, 0));
+		
+		// MIDIキーボードから取得したデータをトラックにaddしていく
+		System.out.println("debug");
+		long tick = 0; // tick累積用
+		long duration = 0; // 一音ごとの長さ(tick)用
+		for(int i=0;i<MyReceiver.inputData.size();i++) {
+			if(i == 0) {
+				// debug
+				System.out.println("pitch: " + MyReceiver.inputData.get(i).pitch
+						+ "  velocity : " + MyReceiver.inputData.get(i).velocity
+						+ "  tick: 0");
+				
+				track.add(createNoteOnEvent(MyReceiver.inputData.get(i).pitch,
+						MyReceiver.inputData.get(i).velocity,
+						0));
+			} else {
+				// マイクロ秒からtickへ変換する
+				// duration = (timeStamp(t) - timeStamp(t-1)) * 480 / l
+				duration = (MyReceiver.inputData.get(i).timeStamp - MyReceiver.inputData.get(i-1).timeStamp) * 480 / l;
+				
+				// debug
+				System.out.println("pitch: " + MyReceiver.inputData.get(i).pitch
+						+ "  velocity : " + MyReceiver.inputData.get(i).velocity
+						+ "  tick: " + (duration + tick));
+
+				track.add(createNoteOnEvent(MyReceiver.inputData.get(i).pitch,
+						MyReceiver.inputData.get(i).velocity,
+						(duration + tick)));				
+
+				// tickを加算していく
+				tick = tick + duration;
+				System.out.println("tick: " + tick);
+			}
+		}
+		// midファイルを作る
+		try {
+			System.out.println("output to " + date + ".mid");
+			MidiSystem.write(sequence, 0, outputFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
 		System.out.println("exit");
 
 	}
@@ -93,6 +176,26 @@ class RecordPerformance {
 					   + "  velocity: " + inputData.get(i).velocity
 					   + "  timeStamp: " + inputData.get(i).timeStamp);			
 		}
+	}
+	
+	// ノートオンイベントを作成するメソッド
+	private static MidiEvent createNoteOnEvent(int nKey, int nVelocity, long lTick) {
+		// 引数はノートオンメッセージ，音程，ベロシティ，長さ
+		return createNoteEvent(ShortMessage.NOTE_ON, nKey, nVelocity, lTick);
+	}
+	
+	// ノートイベントを作成するメソッド
+	private static MidiEvent createNoteEvent(int nCommand, int nKey, int nVelocity, long lTick) {
+		ShortMessage message = new ShortMessage();
+		try {
+			message.setMessage(nCommand, 0, nKey, nVelocity);
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		MidiEvent event = new MidiEvent(message, lTick);
+		
+		return event;
 	}
 	
 }
@@ -150,8 +253,6 @@ class MyReceiver implements Receiver {
 				System.out.println("NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				break;
 			}
-			
-//			System.out.println("hoge"); // デバッグ用
 			
 		}
 	}
