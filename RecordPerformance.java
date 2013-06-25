@@ -7,7 +7,9 @@ import java.util.Calendar;
 import javax.sound.midi.*;
 
 /**
- * MIDIキーボードからの入力を記録し，midファイルに出力する
+ * MIDIキーボードからの入力を記録し，midファイルに出力する<br>
+ * TODO RecordingFrameとの連携をどう取ればよいかなあ<br>
+ * TODO RecordingFrameを独立させる必要はないかもしれない
  * @author myy
  *
  */
