@@ -1,7 +1,7 @@
 import java.util.*;
 
 /**
- * model ->
+ * model発行イベントのデータ定義
  * @author myy
  *
  */

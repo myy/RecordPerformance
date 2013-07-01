@@ -4,7 +4,7 @@ import java.awt.event.*;
 import java.util.*;
 
 /**
- * view
+ * viewクラス定義
  * @author myy
  *
  */
@@ -84,7 +84,7 @@ public class RPView {
 	public enum ButtonStatus {
 		start, // これから録音する
 		stop // 録音し終わった
-		// 録音したものの再生と停止の処理も必要なのでは？
+		// TODO 録音したものの再生と停止の処理も必要．あとから追加で実装する
 	}
 	
 	/**
@@ -129,12 +129,12 @@ public class RPView {
 	
 	// 録音開始イベントを発行
 	protected void recordStartReq() {
-		// TODO
+		this.listener.rStartReq(new RecordOperationEvent(this));
 	}
 	
 	// 録音終了イベントを発行
 	protected void recordStopReq() {
-		// TODO
+		this.listener.rStopReq(new RecordOperationEvent(this));
 	}
 	
 }

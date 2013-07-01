@@ -1,7 +1,7 @@
 import java.util.*;
 
 /**
- * view ->
+ * view発行イベントのデータ定義
  * @author myy
  *
  */

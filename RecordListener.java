@@ -1,8 +1,9 @@
 /**
- * model -> 
+ * model発行イベントを受けとるリスナが継承するインタフェースの定義
  * @author myy
  *
  */
 public interface RecordListener {
-	// midファイル作成完了要求
+	// 録音終了通知ハンドラ
+	public void finish(RecordEvent e);
 }
