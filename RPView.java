@@ -10,9 +10,8 @@ import java.util.*;
  */
 public class RPView {
 	private JFrame frame = new JFrame("record performance");
-	private JButton rStartBtn = new JButton("録音開始"); // 一度押すとテキストが「録音終了」に変更される
+	private JButton rStartBtn = new JButton("録音開始");
 	private JButton rStopBtn = new JButton("録音終了");
-//	private JButton playBtn = new JButton("再生"); // 一度押すとテキストが「停止」に変更される
 	
 	// イベントリスナ
 	private RecordOperationListener listener = null;
@@ -21,7 +20,7 @@ public class RPView {
 	 * コンストラクタ
 	 */
 	public RPView() {
-		
+		System.out.println("RPView constructor");
 		// フレーム初期化
 		setupFrame();
 		
@@ -70,7 +69,6 @@ public class RPView {
 		cp.setLayout(new FlowLayout());
 		cp.add(this.rStartBtn);
 		cp.add(this.rStopBtn);
-//		cp.add(this.playBtn);
 		
 		this.frame.setVisible(true);
 		this.frame.pack();
@@ -82,8 +80,8 @@ public class RPView {
 	 *
 	 */
 	public enum ButtonStatus {
-		start, // これから録音する
-		stop // 録音し終わった
+		init, // 初期状態．録音できる状態
+		recording // 録音中
 		// TODO 録音したものの再生と停止の処理も必要．あとから追加で実装する
 	}
 	
@@ -92,8 +90,8 @@ public class RPView {
 	 * @param status
 	 */
 	public void setButtonStatus(ButtonStatus status) {
-		// 録音した状態のとき
-		if(status == ButtonStatus.stop) {
+		// 録音している状態のとき
+		if(status == ButtonStatus.recording) {
 			this.rStartBtn.setEnabled(false);
 			this.rStopBtn.setEnabled(true);
 		}
