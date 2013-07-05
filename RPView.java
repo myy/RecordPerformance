@@ -4,7 +4,8 @@ import java.awt.event.*;
 import java.util.*;
 
 /**
- * viewクラス定義
+ * viewクラス定義<br>
+ * #6 終了ボタンを用意する
  * @author myy
  *
  */
@@ -70,6 +71,7 @@ public class RPView {
 		cp.add(this.rStartBtn);
 		cp.add(this.rStopBtn);
 		
+		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
 		this.frame.pack();
 	}
