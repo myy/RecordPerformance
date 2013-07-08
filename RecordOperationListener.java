@@ -8,4 +8,6 @@ public interface RecordOperationListener {
 	public void rStartReq(RecordOperationEvent e);
 	// 録音終了要求通知ハンドラ
 	public void rStopReq(RecordOperationEvent e);
+	// プログラム終了要求通知ハンドラ
+	public void eReq(RecordOperationEvent e);
 }

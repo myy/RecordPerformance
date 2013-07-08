@@ -13,6 +13,7 @@ public class RPView {
 	private JFrame frame = new JFrame("record performance");
 	private JButton rStartBtn = new JButton("録音開始");
 	private JButton rStopBtn = new JButton("録音終了");
+	private JButton exitBtn = new JButton("プログラム終了");
 	
 	// イベントリスナ
 	private RecordOperationListener listener = null;
@@ -35,6 +36,13 @@ public class RPView {
 		this.rStopBtn.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				recordStopReq();
+			}
+		});
+		
+		// プログラム終了ボタンのアクションリスナー設定
+		this.exitBtn.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				exitReq();
 			}
 		});
 		
@@ -67,9 +75,10 @@ public class RPView {
 		}
 		
 		Container cp = this.frame.getContentPane();
-		cp.setLayout(new FlowLayout());
+		cp.setLayout(new FlowLayout()); // TODO 実際には別のレイアウトにしないといけない
 		cp.add(this.rStartBtn);
 		cp.add(this.rStopBtn);
+		cp.add(this.exitBtn);
 		
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.frame.setVisible(true);
@@ -83,8 +92,9 @@ public class RPView {
 	 */
 	public enum ButtonStatus {
 		init, // 初期状態．録音できる状態
-		recording // 録音中
+		recording, // 録音中
 		// TODO 録音したものの再生と停止の処理も必要．あとから追加で実装する
+		exit // プログラム終了
 	}
 	
 	/**
@@ -96,11 +106,13 @@ public class RPView {
 		if(status == ButtonStatus.recording) {
 			this.rStartBtn.setEnabled(false);
 			this.rStopBtn.setEnabled(true);
+			this.exitBtn.setEnabled(false);
 		}
 		// 録音できる状態のとき
 		else {
 			this.rStartBtn.setEnabled(true);
 			this.rStopBtn.setEnabled(false);
+			this.exitBtn.setEnabled(true);
 		}
 	}
 	
@@ -137,4 +149,8 @@ public class RPView {
 		this.listener.rStopReq(new RecordOperationEvent(this));
 	}
 	
+	// プログラム終了イベントを発行
+	protected void exitReq() {
+		this.listener.eReq(new RecordOperationEvent(this));
+	}
 }

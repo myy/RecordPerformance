@@ -59,7 +59,9 @@ public class RPModel {
 		return devices;
 	}
 	
-	// 録音開始
+	/**
+	 * 録音開始
+	 */
 	public void startRecording() {
 				
 		try { // MIDIデバイスのトランスミッタと，ソフトウェア側のシンセサイザの接続
@@ -82,7 +84,9 @@ public class RPModel {
 		
 	}
 	
-	// 録音終了
+	/**
+	 * 録音終了
+	 */
 	public void stopRecording() {
 		
 		// デバイスを閉じる
@@ -167,6 +171,14 @@ public class RPModel {
 		// finishGeneratedMidメソッドを呼ぶ（たぶん）
 		this.listener.finish(new RecordEvent(this));
 		
+	}
+	
+	/**
+	 * プログラム終了
+	 */
+	public void exitSystem() {
+		System.exit(0);
+		// TODO ログ残したりの作業をここでする必要ありかも
 	}
 	
 	/**

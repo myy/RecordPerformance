@@ -43,6 +43,10 @@ public class RPController implements RecordOperationListener, RecordListener {
 	@Override public void rStopReq(RecordOperationEvent e) {
 		this.model.stopRecording();
 	}
+	// プログラム終了通知ハンドラ
+	@Override public void eReq(RecordOperationEvent e) {
+		this.model.exitSystem();
+	}
 	
 	// modelからの通知処理
 	// 録音終了通知ハンドラ
