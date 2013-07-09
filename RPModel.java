@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.text.*;
 import javax.sound.midi.*;
+import java.net.*;
 
 /**
  * modelクラス定義
@@ -20,7 +21,9 @@ public class RPModel {
 	MidiDevice device_input = null;
 	MidiDevice device_output = null;
 	MyReceiver myrecv = null;
-	
+
+	Sequencer sequencer = null;
+
 	/**
 	 * コンストラクタ
 	 */
@@ -168,9 +171,44 @@ public class RPModel {
 			System.exit(1);
 		}
 		
-		// finishGeneratedMidメソッドを呼ぶ（たぶん）
+		// finishメソッドを呼ぶ（たぶん）
 		this.listener.finish(new RecordEvent(this));
 		
+	}
+	
+	// midファイル再生メソッド
+	public void midiPlay() {
+		// MIDIまわりの設定
+		try {
+			File smf = new File("hoge.mid"); // TODO ファイル名は直前に録音したものを指定する
+			sequencer = MidiSystem.getSequencer();
+			Sequence seq = MidiSystem.getSequence(smf);
+			
+			sequencer.open(); // シーケンサを開く
+			sequencer.setSequence(seq); // シーケンスをセットする
+		} catch(MalformedURLException e) {
+			e.printStackTrace();
+		} catch(InvalidMidiDataException e) {
+			e.printStackTrace();
+		} catch(IOException e) {
+			e.printStackTrace();
+		} catch(MidiUnavailableException e) {
+			e.printStackTrace();
+		}
+		
+		// 再生処理
+		sequencer.start();
+		
+		// TODO 再生中であることをRPControllerに通知する？
+		
+	}
+	
+	// midファイル停止メソッド
+	public void midiStop() {
+		sequencer.stop();
+		sequencer.setTickPosition(0);
+		
+		// TODO 停止したことをRPControllerに通知する？
 	}
 	
 	/**
@@ -206,9 +244,9 @@ public class RPModel {
 	/**
 	 * 
 	 */
-	public void finishGenerateMid() {
-		this.listener.finish(new RecordEvent(this));
-	}
+//	public void finishGenerateMid() {
+//		this.listener.finish(new RecordEvent(this));
+//	}
 
 	/**
 	 * MIDIキーボードから受け取ったデータを一覧表示する

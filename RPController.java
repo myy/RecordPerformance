@@ -43,6 +43,17 @@ public class RPController implements RecordOperationListener, RecordListener {
 	@Override public void rStopReq(RecordOperationEvent e) {
 		this.model.stopRecording();
 	}
+	
+	// TODO 再生通知ハンドラ
+	@Override public void mPlayReq(RecordOperationEvent e) {
+		
+	}
+	
+	// TODO 停止通知ハンドラ
+	@Override public void mStopReq(RecordOperationEvent e) {
+		
+	}
+	
 	// プログラム終了通知ハンドラ
 	@Override public void eReq(RecordOperationEvent e) {
 		this.model.exitSystem();
@@ -53,5 +64,7 @@ public class RPController implements RecordOperationListener, RecordListener {
 	@Override public void finish(RecordEvent e) {
 		this.view.setButtonStatus(RPView.ButtonStatus.init);
 	}
+	
+	// TODO 再生，停止に関する通知ハンドラ必要かも
 	
 }
