@@ -23,6 +23,8 @@ public class RPModel {
 	MyReceiver myrecv = null;
 
 	Sequencer sequencer = null;
+	
+	String date;
 
 	/**
 	 * コンストラクタ
@@ -101,9 +103,9 @@ public class RPModel {
 		// MIDIファイルの作成
 		Calendar cal = Calendar.getInstance();
 		DateFormat format = new SimpleDateFormat("MMddHHmmss");
-		String date = format.format(cal.getTime());
+		date = format.format(cal.getTime());
 		
-		File outputFile = new File(date + ".mid");
+		File outputFile = new File("smf/" + date + ".mid");
 		
 		Sequence sequence = null;
 		
@@ -171,8 +173,8 @@ public class RPModel {
 			System.exit(1);
 		}
 		
-		// finishメソッドを呼ぶ（たぶん）
-		this.listener.finish(new RecordEvent(this));
+		// 処理が終わったので，viewに対して録音終了を知らせる
+		this.listener.rFinish(new RecordEvent(this));
 		
 	}
 	
@@ -180,7 +182,7 @@ public class RPModel {
 	public void midiPlay() {
 		// MIDIまわりの設定
 		try {
-			File smf = new File("hoge.mid"); // TODO ファイル名は直前に録音したものを指定する
+			File smf = new File("smf/" + date + ".mid");
 			sequencer = MidiSystem.getSequencer();
 			Sequence seq = MidiSystem.getSequence(smf);
 			
@@ -196,10 +198,13 @@ public class RPModel {
 			e.printStackTrace();
 		}
 		
-		// 再生処理
+		// mid再生
 		sequencer.start();
-		
-		// TODO 再生中であることをRPControllerに通知する？
+
+		// TODO 再生が完了したら，viewへ再生完了を通知させたい．以下のコードだと通知できない．
+//		if(!sequencer.isRecording()) {
+//			this.listener.mFinish(new RecordEvent(this));
+//		}
 		
 	}
 	
@@ -208,7 +213,8 @@ public class RPModel {
 		sequencer.stop();
 		sequencer.setTickPosition(0);
 		
-		// TODO 停止したことをRPControllerに通知する？
+		// midファイル停止をviewへ通知する
+		this.listener.mFinish(new RecordEvent(this));
 	}
 	
 	/**

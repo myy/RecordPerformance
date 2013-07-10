@@ -14,8 +14,8 @@ public class RPView {
 	private JButton rStartBtn = new JButton("録音開始");
 	private JButton rStopBtn = new JButton("録音終了");
 	private JButton exitBtn = new JButton("プログラム終了");
-	private JButton mPlayBtn = new JButton("再生"); // TODO
-	private JButton mStopBtn = new JButton("停止"); // TODO
+	private JButton mPlayBtn = new JButton("再生");
+	private JButton mStopBtn = new JButton("停止");
 	
 	// イベントリスナ
 	private RecordOperationListener listener = null;
@@ -109,9 +109,10 @@ public class RPView {
 	 *
 	 */
 	public enum ButtonStatus {
-		init, // 初期状態．録音できる状態
+		init, // 初期状態
 		recording, // 録音中
-		// TODO 録音したものの再生と停止の処理も必要．あとから追加で実装する
+		recorded, // 録音後
+		playing, // 再生中
 		exit // プログラム終了
 	}
 	
@@ -120,17 +121,36 @@ public class RPView {
 	 * @param status
 	 */
 	public void setButtonStatus(ButtonStatus status) {
-		// TODO 再生・停止ボタンの状態も追加する
 		// 録音している状態のとき
 		if(status == ButtonStatus.recording) {
 			this.rStartBtn.setEnabled(false);
 			this.rStopBtn.setEnabled(true);
-			this.exitBtn.setEnabled(false);
+			this.mPlayBtn.setEnabled(false);
+			this.mStopBtn.setEnabled(false);
+			this.exitBtn.setEnabled(true);
 		}
-		// 録音できる状態のとき
+		// 録音後
+		else if(status == ButtonStatus.recorded) {
+			this.rStartBtn.setEnabled(true);
+			this.rStopBtn.setEnabled(false);
+			this.mPlayBtn.setEnabled(true);
+			this.mStopBtn.setEnabled(false);
+			this.exitBtn.setEnabled(true);
+		}
+		// 再生中
+		else if(status == ButtonStatus.playing) {
+			this.rStartBtn.setEnabled(false);
+			this.rStopBtn.setEnabled(false);
+			this.mPlayBtn.setEnabled(false);
+			this.mStopBtn.setEnabled(true);
+			this.exitBtn.setEnabled(true);
+		}
+		// 初期状態（ButtonStatus == init）
 		else {
 			this.rStartBtn.setEnabled(true);
 			this.rStopBtn.setEnabled(false);
+			this.mPlayBtn.setEnabled(false);
+			this.mStopBtn.setEnabled(false);
 			this.exitBtn.setEnabled(true);
 		}
 	}
