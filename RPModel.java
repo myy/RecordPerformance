@@ -330,6 +330,12 @@ class MyReceiver implements Receiver {
 			throw new IllegalStateException("no channels available");
 		}
 		this.defaultChannel = channels[0]; // 最初のチャンネルをデフォルトで読む
+		
+		// 2回目以降の録音の場合には，inputDataの中身をクリアする
+		if(inputData.size() > 0) {
+			System.out.println("ArrayListの要素を削除します");
+			inputData.clear();
+		}
 	}
 	
 	/**
