@@ -5,7 +5,8 @@ import javax.sound.midi.*;
 import java.net.*;
 
 /**
- * modelクラス定義
+ * modelクラス定義<br>
+ * 2016/03/24 CASIO LK-205 に対応させるために修正中
  * @author myy
  *
  */
@@ -136,7 +137,7 @@ public class RPModel {
 		long duration = 0; // 一音ごとの長さ
 		
 		for(int i=0;i<MyReceiver.inputData.size();i++) {
-			if(i == 0) {
+			if(i == 0) { // 最初のノートイベント：鍵盤を押すのが最初になるはずなのでNOTE OFFは気にしなくてもよいか？
 				// debug
 				System.out.println("pitch: " + MyReceiver.inputData.get(i).pitch
 						+ "  velocity : " + MyReceiver.inputData.get(i).velocity
@@ -155,9 +156,16 @@ public class RPModel {
 						+ "  velocity : " + MyReceiver.inputData.get(i).velocity
 						+ "  tick: " + (duration + tick));
 
-				track.add(createNoteOnEvent(MyReceiver.inputData.get(i).pitch,
-						MyReceiver.inputData.get(i).velocity,
-						(duration + tick)));				
+				// ベロシティの値でNOTE ONとNOTE OFFを振り分ける
+				if(MyReceiver.inputData.get(i).velocity != 0) {
+					track.add(createNoteOnEvent(MyReceiver.inputData.get(i).pitch,
+							MyReceiver.inputData.get(i).velocity,
+							(duration + tick)));									
+				} else {
+					track.add(createNoteOffEvent(MyReceiver.inputData.get(i).pitch,
+//							MyReceiver.inputData.get(i).velocity,
+							(duration + tick)));														
+				}
 
 				// tickを加算していく
 				tick = tick + duration;
@@ -281,6 +289,18 @@ public class RPModel {
 	
 	/**
 	 * 
+	 * @param nKey
+	 * @param nVelocity
+	 * @param lTick
+	 * @return
+	 */
+	private static MidiEvent createNoteOffEvent(int nKey, long lTick) {
+		// 引数はノートオンメッセージ，音程，ベロシティ，長さ
+		return createNoteEvent(ShortMessage.NOTE_OFF, nKey, 0, lTick);
+	}
+	
+	/**
+	 * 
 	 * @param nCommand
 	 * @param nKey
 	 * @param nVelocity
@@ -343,23 +363,28 @@ class MyReceiver implements Receiver {
 	 */
 	public void send(MidiMessage message, long timeStamp) {
 		// sendメソッドは周期的に呼び出されている
+		MIDIData midiData_;
 		
 		if(message instanceof ShortMessage) {
 			ShortMessage sm = ((ShortMessage)message);
 			// getCommand()で取得したMIDIメッセージの種類によって挙動を変える
 			switch(sm.getCommand()) {
-			case ShortMessage.NOTE_ON: // 鍵盤を離した場合もこちらの処理に入る
+			case ShortMessage.NOTE_ON: // 鍵盤を押したとき
 				debug++;
 				// getData1()で音程，getData2()でベロシティの取得
 				this.defaultChannel.noteOn(sm.getData1(), sm.getData2()); // ソフトウェア音源で発音
 				System.out.println("[" + debug + "] NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				// 取得した音程，ベロシティ，タイムスタンプをaddする
-				MIDIData midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
+				midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
 				inputData.add(midiData_); // cloneしたほうがよいのかな？
 				break;
-			case ShortMessage.NOTE_OFF: // 明示的に消音のメッセージが送られた場合はこちらの処理に入る
+			case ShortMessage.NOTE_OFF: // 鍵盤を離したとき
+				debug++;
 				this.defaultChannel.noteOff(sm.getData1(), sm.getData2()); // ソフトウェア音源で消音
-				System.out.println("NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				System.out.println("[" + debug + "] NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
+				// 取得した音程，ベロシティ（NOTE OFF なので 0），タイムスタンプをaddする
+				midiData_ = new MIDIData(sm.getData1(), 0, timeStamp);
+				inputData.add(midiData_); // cloneしたほうがよいのかな？
 				break;
 			}
 			
