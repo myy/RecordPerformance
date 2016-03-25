@@ -5,8 +5,7 @@ import javax.sound.midi.*;
 import java.net.*;
 
 /**
- * modelクラス定義<br>
- * 2016/03/24 CASIO LK-205 に対応させるために修正中
+ * modelクラス定義
  * @author myy
  *
  */
@@ -137,7 +136,7 @@ public class RPModel {
 		long duration = 0; // 一音ごとの長さ
 		
 		for(int i=0;i<MyReceiver.inputData.size();i++) {
-			if(i == 0) { // 最初のノートイベント：鍵盤を押すのが最初になるはずなのでNOTE OFFは気にしなくてもよいか？
+			if(i == 0) { // 最初のノートイベント：鍵盤を押すのが最初になるはずなのでNOTE OFFは気にしなくてもよい（はず）
 				// debug
 				System.out.println("pitch: " + MyReceiver.inputData.get(i).pitch
 						+ "  velocity : " + MyReceiver.inputData.get(i).velocity
@@ -157,6 +156,7 @@ public class RPModel {
 						+ "  tick: " + (duration + tick));
 
 				// ベロシティの値でNOTE ONとNOTE OFFを振り分ける
+				// CASIO LK-205に限らず，離鍵をNOTE OFFで扱うデバイスに対応できているはず
 				if(MyReceiver.inputData.get(i).velocity != 0) {
 					track.add(createNoteOnEvent(MyReceiver.inputData.get(i).pitch,
 							MyReceiver.inputData.get(i).velocity,
@@ -165,6 +165,7 @@ public class RPModel {
 					track.add(createNoteOffEvent(MyReceiver.inputData.get(i).pitch,
 //							MyReceiver.inputData.get(i).velocity,
 							(duration + tick)));														
+					// createNoteOnEventでベロシティ値を0にしても同じことができるはず
 				}
 
 				// tickを加算していく
@@ -376,15 +377,15 @@ class MyReceiver implements Receiver {
 				System.out.println("[" + debug + "] NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				// 取得した音程，ベロシティ，タイムスタンプをaddする
 				midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
-				inputData.add(midiData_); // cloneしたほうがよいのかな？
+				inputData.add(midiData_);
 				break;
-			case ShortMessage.NOTE_OFF: // 鍵盤を離したとき
+			case ShortMessage.NOTE_OFF: // 鍵盤を離したとき（NOTE OFFメッセージを送るデバイスの場合）
 				debug++;
 				this.defaultChannel.noteOff(sm.getData1(), sm.getData2()); // ソフトウェア音源で消音
 				System.out.println("[" + debug + "] NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				// 取得した音程，ベロシティ（NOTE OFF なので 0），タイムスタンプをaddする
 				midiData_ = new MIDIData(sm.getData1(), 0, timeStamp);
-				inputData.add(midiData_); // cloneしたほうがよいのかな？
+				inputData.add(midiData_);
 				break;
 			}
 			
