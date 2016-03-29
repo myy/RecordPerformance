@@ -364,7 +364,7 @@ class MyReceiver implements Receiver {
 	 */
 	public void send(MidiMessage message, long timeStamp) {
 		// sendメソッドは周期的に呼び出されている
-		MIDIData midiData_;
+//		MIDIData midiData_;
 		
 		if(message instanceof ShortMessage) {
 			ShortMessage sm = ((ShortMessage)message);
@@ -376,16 +376,16 @@ class MyReceiver implements Receiver {
 				this.defaultChannel.noteOn(sm.getData1(), sm.getData2()); // ソフトウェア音源で発音
 				System.out.println("[" + debug + "] NOTE ON: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				// 取得した音程，ベロシティ，タイムスタンプをaddする
-				midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
-				inputData.add(midiData_);
+//				midiData_ = new MIDIData(sm.getData1(), sm.getData2(), timeStamp);
+				inputData.add(new MIDIData(sm.getData1(), sm.getData2(), timeStamp));
 				break;
 			case ShortMessage.NOTE_OFF: // 鍵盤を離したとき（NOTE OFFメッセージを送るデバイスの場合）
 				debug++;
 				this.defaultChannel.noteOff(sm.getData1(), sm.getData2()); // ソフトウェア音源で消音
 				System.out.println("[" + debug + "] NOTE OFF: pitch " + sm.getData1() + " : velocity " + sm.getData2() + " : timeStamp " + timeStamp);
 				// 取得した音程，ベロシティ（NOTE OFF なので 0），タイムスタンプをaddする
-				midiData_ = new MIDIData(sm.getData1(), 0, timeStamp);
-				inputData.add(midiData_);
+//				midiData_ = new MIDIData(sm.getData1(), 0, timeStamp);
+				inputData.add(new MIDIData(sm.getData1(), 0, timeStamp));
 				break;
 			}
 			
